@@ -7,3 +7,6 @@ dist
 # Si tu repo es PRIVADO y quieres respaldo en GitHub, borra estas lineas.
 content-private/
 .admin-key
+
+# --- Personal del tutor (no es parte de la app) ---
+personal/

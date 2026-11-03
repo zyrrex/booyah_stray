@@ -4,6 +4,8 @@ Web estática de aprendizaje de programación que Carlos (el tutor) construye pa
 Carlos enseña por videollamada los domingos y deja ejercicios; esta web es la bitácora: lecciones, práctica con
 evaluador, XP/rachas/insignias, bitácora de método y un panel de tutor.
 
+> **Antes de escribir contenido nuevo, lee** `docs/PEDAGOGIA.md` y `docs/LECCIONES.md` (el estándar y su checklist).
+
 ## Regla que no se rompe
 
 **No salirse de lo ya enseñado.** Al agregar o ampliar una lección, profundiza *solo* lo que Carlos ya explicó
@@ -32,6 +34,9 @@ Evita `this` a nivel superior (el navegador y Node difieren).
 | Resultado (se commitea) | `src/generated/bundle.json` |
 | Llave de tutor y código de rescate (**no commitear**) | `.admin-key` |
 | Formato de lecciones y ejercicios | `docs/CONTENIDO.md` |
+| Qué es la app, arquitectura, gamificación, evolución a BD | `docs/STRAY.md` |
+| Cómo se diseña una lección y su serie de ejercicios (estándar + checklist) | `docs/LECCIONES.md` |
+| Criterio pedagógico, voz, método, reglas de alcance | `docs/PEDAGOGIA.md` |
 | UI | `src/components`, `src/pages`, estilos en `src/styles.css` |
 | Estado/progreso/XP/insignias | `src/lib/store.ts`, `src/lib/gamify.ts` |
 | Acceso (alumno / tutor) | `src/lib/auth.ts`, `src/components/Gate.tsx` |

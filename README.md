@@ -58,6 +58,15 @@ npm run dev        # genera el contenido y abre http://localhost:5173
 
 El formato de las lecciones y de los ejercicios está en [`docs/CONTENIDO.md`](docs/CONTENIDO.md).
 
+## Documentación
+
+| Documento | De qué trata |
+|---|---|
+| [`docs/STRAY.md`](docs/STRAY.md) | Qué es la app, arquitectura, gamificación, distribución del aprendizaje y evolución a base de datos |
+| [`docs/LECCIONES.md`](docs/LECCIONES.md) | Cómo se diseña una lección y su serie de ejercicios (estándar y checklist) |
+| [`docs/PEDAGOGIA.md`](docs/PEDAGOGIA.md) | Criterio de enseñanza, voz, método y reglas de alcance |
+| [`docs/CONTENIDO.md`](docs/CONTENIDO.md) | Formato técnico de los archivos de lecciones y ejercicios |
+
 ## Despliegue
 
 **GitHub Pages (incluido)**: `Settings → Pages → Source: GitHub Actions`. El workflow
