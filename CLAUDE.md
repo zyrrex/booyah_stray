@@ -7,12 +7,20 @@ evaluador, XP/rachas/insignias, bitácora de método y un panel de tutor.
 ## Regla que no se rompe
 
 **No salirse de lo ya enseñado.** Al agregar o ampliar una lección, profundiza *solo* lo que Carlos ya explicó
-(más ejemplos, errores típicos, casos de borde). Nada de temas nuevos (funciones, métodos de arreglos, clases, async…)
+(más ejemplos, errores típicos, casos de borde). Nada de temas nuevos (métodos de arreglos, clases, async…)
 mientras Carlos no diga que los vio: satura al alumno. Los ejercicios también deben poder resolverse solo con lo visto.
 
-Estado actual: 6 clases (variables/operadores → condicionales → textos/switch → ternario/bucles → alcance/while →
-objetos y arreglos). Aún **no** se ven: funciones, métodos de arreglos (`push`, `map`…), `while` en profundidad,
-`do while`, JSON (solo mencionado), clases, DOM.
+Estado actual: 9 clases (variables/operadores → condicionales → textos/switch → ternario/bucles → alcance/while →
+objetos y arreglos → **funciones** → **iteradores (`for of`, `forEach`, `for in`) y métodos en objetos** →
+**arrow functions**). Aún **no** se ven: métodos de arreglos (`push`, `map`, `filter`, `reduce`…), `Object.keys`/`entries`,
+`while` en profundidad, `do while`, JSON (solo mencionado), clases, `try/catch`, spread/rest, desestructuración,
+DOM, async. Detalles ya enseñados: `this` dentro de métodos (clase 8), `return` y parámetros por
+defecto (clase 7), notación de corchetes (clase 8).
+
+Particularidades del evaluador para funciones: el código del alumno corre **después** de los `@datos` (y de
+`$append`), así que los ejercicios de función piden definir la función **y llamarla con los datos** e imprimir; las
+variantes cambian los datos. El evaluador solo compara la **salida**: no puede comprobar que se usó flecha o `function`.
+Evita `this` a nivel superior (el navegador y Node difieren).
 
 ## Dónde está cada cosa
 

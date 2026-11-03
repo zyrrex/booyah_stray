@@ -5,7 +5,7 @@ title: Chuleta
 subtitle: Todo lo visto en un solo lugar para consultar rápido. Si algo no se entiende, vuelve a su clase.
 date: siempre
 icon: list
-summary: Sintaxis, operadores, tablas de verdad y errores típicos de las clases 1 a 6.
+summary: Sintaxis, operadores, tablas de verdad y errores típicos de las clases 1 a 9.
 ---
 
 ## Variables y tipos
@@ -147,6 +147,77 @@ for (let i = 0; i < productos.length; i++) { /* productos[i] */ }
 
 `undefined.algo` **detiene** el programa con `TypeError`.
 
+## Funciones
+
+```js-static
+function calcularTotal(precio, cantidad = 1) {   // parámetros (cantidad tiene valor por defecto)
+  return precio * cantidad                        // devuelve y TERMINA la función
+}
+
+calcularTotal(10, 3)    // invocar: argumentos por posición → 30
+calcularTotal(10)       // falta cantidad → usa el 1 → 10
+```
+
+- **Definir no ejecuta**; invocar (`nombre()`) sí. Sin paréntesis no se ejecuta.
+- **Parámetro** = hueco de la definición · **argumento** = valor al llamar. Por **posición**.
+- Falta un argumento → `undefined` · sobra → se ignora.
+- El valor por defecto solo se usa si el argumento **falta** o es `undefined` (`0`, `""`, `null` y `false` **no**).
+- `console.log` **muestra**; `return` **entrega**. Sin `return` → `undefined`.
+- Lo declarado dentro de la función **solo existe dentro**.
+- Números y textos **se copian** al entrar; objetos y arreglos **no** (cambiarlos adentro cambia el original).
+
+## Iteradores
+
+```js-static
+for (const nota of notas) { }                        // valores de un arreglo (break / continue sirven)
+for (const letra of "hola") { }                      // letra por letra
+notas.forEach(function (nota, indice) { })           // una función por elemento (sin break)
+for (const clave in objeto) { objeto[clave] }        // claves de un objeto → valor con corchetes
+```
+
+| Quiero… | Uso |
+|---|---|
+| valores de un arreglo, con `break`/`continue` | `for of` |
+| ejecutar una función por elemento, con índice | `forEach` |
+| propiedades de un objeto | `for in` |
+| control total del índice (atrás, de 2 en 2…) | `for` clásico |
+
+- `objeto.clave` busca una propiedad **llamada** `clave` · `objeto[clave]` usa **lo que vale** la variable.
+- `objeto[clave] = valor` también **crea** o cambia propiedades.
+- No uses `for in` con arreglos (da los índices como texto).
+
+## Métodos en objetos
+
+```js-static
+const cuenta = {
+  saldo: 500,
+  depositar: function (monto) { this.saldo += monto },   // this = el objeto dueño
+  mostrar: function () { return `Saldo: ${this.saldo}` }
+}
+cuenta.depositar(100)    // objeto.metodo(argumentos)
+cuenta.mostrar()
+```
+
+- **Método** = función que pertenece a un objeto. Leer `cuenta.mostrar` no lo ejecuta; `cuenta.mostrar()` sí.
+- Propiedad inexistente → `undefined` · método inexistente al llamarlo → `TypeError`.
+- Propiedades propias dentro del método: **`this.propiedad`**.
+
+## Arrow functions
+
+```js-static
+const sumar = (a, b) => a + b            // sin llaves: return implícito
+const saludar = (nombre) => {            // con llaves: hay que escribir return
+  return `Hola, ${nombre}`
+}
+const bienvenida = () => console.log("Hola")      // sin parámetros: () obligatorios
+const punto = (x, y) => ({ x: x, y: y })          // objeto con return implícito: entre paréntesis
+notas.forEach((nota, indice) => console.log(indice, nota))
+```
+
+- Llaves **sin** `return` → devuelve `undefined`.
+- Una flecha en `const` **no** se puede llamar antes de definirla.
+- Método que usa `this` → `function`, **no** flecha.
+
 ## Errores típicos (revisa esto primero)
 
 | Síntoma | Casi seguro es… |
@@ -161,6 +232,13 @@ for (let i = 0; i < productos.length; i++) { /* productos[i] */ }
 | `NaN` | cuenta con un dato que no es número |
 | Falla justo en el borde | `>` contra `>=` |
 | Resultado distinto al esperado | el **orden** de tus `if`, `break` o `continue` |
+| La función “no hace nada” | no la **invocaste** (faltan los `()`) |
+| `undefined` en vez del resultado | usaste `console.log` en lugar de `return` (o llaves sin `return` en una flecha) |
+| `undefined` dentro de un `for in` | usaste `objeto.clave` en vez de `objeto[clave]` |
+| `x.forEach is not a function` | `x` no es un arreglo |
+| `x.metodo is not a function` | el método no existe o está mal escrito |
+| El método ve `undefined` en sus datos | falta el **`this.`** |
+| `Cannot access 'x' before initialization` | llamaste una flecha antes de definirla |
 
 ## Tu ruta mínima
 
