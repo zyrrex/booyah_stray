@@ -1,0 +1,9 @@
+node_modules
+dist
+*.local
+.DS_Store
+
+# --- PRIVADO: soluciones, explicaciones y llave admin. Nunca al repositorio publico. ---
+# Si tu repo es PRIVADO y quieres respaldo en GitHub, borra estas lineas.
+content-private/
+.admin-key
