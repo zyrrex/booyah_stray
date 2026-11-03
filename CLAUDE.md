@@ -36,7 +36,7 @@ objetos y arreglos). Aún **no** se ven: funciones, métodos de arreglos (`push`
 2. Escribe `content-private/exercises/claseN.md` con ids `sN-…`. Cada ejercicio de código lleva **solución, casos
    variados con bordes y `@check`**. Si el material trae salidas esperadas (PDF), ponlas en `$expect`.
 3. Actualiza `content/lessons/chuleta.md` con lo nuevo.
-4. `npm run validate` (debe terminar en `✔` y 0 advertencias) → `npm run build` → mira el panel de tutor →
+4. `npm run validate` (debe terminar en `✔` y 0 advertencias) → `npm run build:all` → mira el panel de tutor →
    *Validar contenido*.
 5. No hagas commit/push salvo que Carlos lo pida. Si va a un repo público, `content-private/` y `.admin-key`
    **jamás** se suben.

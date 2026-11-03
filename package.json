@@ -8,7 +8,8 @@
     "content": "tsx scripts/build-content.ts",
     "validate": "tsx scripts/build-content.ts --strict",
     "build:app": "tsc --noEmit && vite build",
-    "build": "npm run content && npm run build:app",
+    "build": "npm run build:app",
+    "build:all": "npm run content && npm run build:app",
     "preview": "vite preview"
   },
   "dependencies": {

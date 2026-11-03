@@ -240,7 +240,12 @@ async function main() {
   const sealedItems: SealedPayload['items'] = {}
   const ids = new Set<string>()
 
-  if (files.length === 0) console.warn('⚠ No hay ejercicios en content-private/exercises/*.md')
+  if (files.length === 0) {
+    // En un servidor de build (Vercel, Netlify…) el contenido privado no existe: nunca pisar el bundle ya compilado
+    console.error('✖ No hay ejercicios en content-private/exercises/*.md: no se toca src/generated/bundle.json ni .admin-key.')
+    console.error('  (Si estas en un servidor de build, usa "npm run build:app"; el contenido se compila en tu PC.)')
+    process.exit(1)
+  }
 
   for (const f of files) {
     const raw = parseExercises(fs.readFileSync(path.join(SRC_DIR, f), 'utf8'), f)

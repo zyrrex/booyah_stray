@@ -20,8 +20,9 @@ npm run dev        # genera el contenido y abre http://localhost:5173
 | `npm run dev` | Compila el contenido y levanta el servidor de desarrollo |
 | `npm run content` | Solo compila el contenido (`content-private/` → `src/generated/bundle.json`) |
 | `npm run validate` | Igual, pero **las advertencias también fallan** (úsalo antes de publicar) |
-| `npm run build` | Contenido + comprobación de tipos + build de producción en `dist/` |
-| `npm run build:app` | Solo el build (sin recompilar contenido; lo usa el workflow de GitHub) |
+| `npm run build` | Comprobación de tipos + build de producción en `dist/` (NO recompila contenido; es lo que corre Vercel) |
+| `npm run build:all` | Contenido + build (úsalo en tu PC) |
+| `npm run build:app` | Igual que `build` (lo usa el workflow de GitHub) |
 
 ## Acceso (cómo funciona)
 
@@ -53,7 +54,7 @@ npm run dev        # genera el contenido y abre http://localhost:5173
 2. La **lección** va en `content/lessons/claseN.md` (pública). Los **ejercicios y soluciones** en
    `content-private/exercises/claseN.md` (**privado**, gitignored por defecto).
 3. `npm run validate` ejecuta cada solución y comprueba los casos. Si algo no cuadra, no genera nada.
-4. `npm run build` → carpeta `dist/`. Con GitHub Pages basta hacer `git push` (ver abajo).
+4. `npm run build:all` → carpeta `dist/`. Haz commit de `src/generated/bundle.json` y `git push`: el hosting solo construye la app, nunca el contenido.
 
 El formato de las lecciones y de los ejercicios está en [`docs/CONTENIDO.md`](docs/CONTENIDO.md).
 
@@ -64,7 +65,7 @@ El formato de las lecciones y de los ejercicios está en [`docs/CONTENIDO.md`](d
 Como el contenido privado no está en el repo, **el bundle ya compilado (`src/generated/bundle.json`) sí se sube**:
 compila localmente (`npm run content`) y haz commit de ese archivo.
 
-**Alternativas** (Netlify, Vercel, Cloudflare Pages): build command `npm run build:app`, publish dir `dist`.
+**Vercel / Netlify / Cloudflare Pages**: build command `npm run build` (o `build:app`), output `dist`. El contenido privado no existe allí; se usa el `bundle.json` commiteado.
 Rutas con `#` y `base: './'`: funciona en cualquier subcarpeta.
 
 ## Respaldos importantes

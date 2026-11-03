@@ -102,5 +102,5 @@ Las respuestas se publican solo como hashes; el alumno recibe “correcta/incorr
 ```bash
 npm run validate   # ejecuta TODAS las soluciones; falla si alguna no cumple sus casos
 npm run dev        # revisa en el navegador (panel de tutor → "Validar contenido" repite la prueba en el navegador)
-npm run build
+npm run build:all
 ```
