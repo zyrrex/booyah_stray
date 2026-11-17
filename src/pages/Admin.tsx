@@ -4,7 +4,7 @@ import { CodeEditor } from '@/components/CodeEditor'
 import { Icon } from '@/components/Icon'
 import { Markdown } from '@/components/Markdown'
 import { Heatmap, Ring, XpBar } from '@/components/widgets'
-import { B, clases, exerciseById, exercises, exercisesOfClase, lessons } from '@/lib/content'
+import { B, CURSOS, clasesDe, exerciseById, exercises, exercisesOfClase, lessons } from '@/lib/content'
 import { evaluateCode, hashAns } from '@/lib/evaluate'
 import { claseProgress, levelInfo, stats, streaks } from '@/lib/gamify'
 import { logout, useAuth } from '@/lib/auth'
@@ -109,17 +109,22 @@ function ProgresoTab() {
             <section className="card"><h3 className="card-t">Actividad</h3><Heatmap activity={prog.activity} weeks={20} /></section>
             <section className="card">
               <h3 className="card-t">Por clase</h3>
-              <div className="mini-map">
-                {clases.map((c) => {
-                  const cp = claseProgress(prog, c.clase)
-                  return (
-                    <div key={c.id} className="mini-clase">
-                      <Ring pct={cp.pct} size={46} label={String(c.clase)} color={cp.pct === 100 ? 'var(--ok)' : 'var(--accent)'} />
-                      <div><strong>{c.title}</strong><span className="muted">{cp.done}/{cp.total} · bitácoras {exercisesOfClase(c.clase).filter((e) => prog.exercises[e.id]?.bitacora).length}</span></div>
-                    </div>
-                  )
-                })}
-              </div>
+              {CURSOS.map((cu) => (
+                <div key={cu.id}>
+                  <div className="kicker">{cu.title}</div>
+                  <div className="mini-map">
+                    {clasesDe(cu.id).map((c) => {
+                      const cp = claseProgress(prog, c.clase, cu.id)
+                      return (
+                        <div key={c.id} className="mini-clase">
+                          <Ring pct={cp.pct} size={46} label={String(c.clase)} color={cp.pct === 100 ? 'var(--ok)' : 'var(--accent)'} />
+                          <div><strong>{c.title}</strong><span className="muted">{cp.done}/{cp.total} · bitácoras {exercisesOfClase(c.clase, cu.id).filter((e) => prog.exercises[e.id]?.bitacora).length}</span></div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              ))}
             </section>
           </div>
 
@@ -282,18 +287,18 @@ function SolucionesTab({ items }: { items: Record<string, { solution?: string; e
       <section className="card">
         <label>Ejercicio
           <select value={id} onChange={(e) => setId(e.target.value)}>
-            {clases.map((c) => (
-              <optgroup key={c.id} label={`Clase ${c.clase} · ${c.title}`}>
-                {exercisesOfClase(c.clase).map((e) => <option key={e.id} value={e.id}>{e.num} · {e.title}</option>)}
+            {CURSOS.flatMap((cu) => clasesDe(cu.id).map((c) => (
+              <optgroup key={c.id} label={`${cu.short} · Clase ${c.clase} · ${c.title}`}>
+                {exercisesOfClase(c.clase, cu.id).map((e) => <option key={e.id} value={e.id}>{e.num} · {e.title}</option>)}
               </optgroup>
-            ))}
+            )))}
           </select>
         </label>
       </section>
       {ex && it && (
         <>
           <section className="card"><h3 className="card-t">Enunciado</h3><Markdown md={ex.statement} /></section>
-          {it.solution && <section className="card"><h3 className="card-t">Solución de referencia</h3>{ex.data && <CodeEditor value={ex.data} readOnly minLines={2} gutter={false} />}<CodeEditor value={it.solution} readOnly minLines={4} /></section>}
+          {it.solution && <section className="card"><h3 className="card-t">Solución de referencia</h3>{ex.data && <CodeEditor value={ex.data} readOnly minLines={2} gutter={false} lang={ex.lang ?? 'js'} />}<CodeEditor value={it.solution} readOnly minLines={4} lang={ex.lang ?? 'js'} /></section>}
           {it.expected && (
             <section className="card">
               <h3 className="card-t">Salidas esperadas por caso</h3>

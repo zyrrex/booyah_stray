@@ -2,6 +2,7 @@
 //
 // Formato:
 //   ### @ex s2-a1 | A1 | Titulo | code | 2 | 30 | tag1,tag2        (id | num | titulo | kind | nivel | xp | tags)
+//   (ids sN-... = curso JavaScript; qN-... = curso SQL, con "#### @lenguaje" sql; ver docs/CONTENIDO.md)
 //   #### @enunciado      markdown del enunciado
 //   #### @datos          bloque ```js con los datos (code) o las variables de contexto (predict)
 //   #### @starter        bloque ```js con el esqueleto inicial del editor
@@ -17,6 +18,8 @@
 
 export interface RawExercise {
   id: string
+  /** js: ids s<clase>-...   ·   sql: ids q<clase>-... */
+  curso: 'js' | 'sql'
   clase: number
   num: string
   title: string
@@ -43,10 +46,12 @@ export function parseExercises(text: string, file: string): RawExercise[] {
     if (head) {
       flush()
       const [id, num, title, kind, level, xp, tags] = head[1].split('|').map((s) => s.trim())
-      const clase = Number(id.match(/^s(\d+)-/)?.[1])
+      const idm = id.match(/^([sq])(\d+)-/)
+      const clase = Number(idm?.[2])
       if (!clase || !['code', 'predict'].includes(kind)) throw new Error(`${file}: cabecera invalida: ${line}`)
       cur = {
         id,
+        curso: idm![1] === 'q' ? 'sql' : 'js',
         clase,
         num,
         title,

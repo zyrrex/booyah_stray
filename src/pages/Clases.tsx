@@ -1,25 +1,35 @@
 import { PageHead } from '@/components/Shell'
 import { Icon } from '@/components/Icon'
 import { Ring } from '@/components/widgets'
-import { clases, exercisesOfClase, lessons } from '@/lib/content'
+import { clasesDe, cursoById, exercisesOfClase, sideLessons, type Lesson } from '@/lib/content'
 import { claseProgress } from '@/lib/gamify'
 import { useProgress } from '@/lib/store'
+import type { CursoId } from '@/types'
 
-export function Clases() {
+/** Ruta de una leccion suelta (metodo, chuleta…). */
+export const sideHref = (l: Lesson) => (l.id === 'chuleta-sql' ? '#/chuleta/sql' : `#/${l.id}`)
+
+/** Mapa de misiones de un curso. */
+export function Clases({ curso }: { curso: CursoId }) {
   const p = useProgress()
-  const recommended = clases.find((c) => claseProgress(p, c.clase).pct < 100)?.clase
+  const cu = cursoById(curso)
+  const list = clasesDe(curso)
+  if (!cu) return <div className="page"><p>Ese curso no existe. <a href="#/clases">Volver a los cursos</a></p></div>
+  const recommended = list.find((c) => claseProgress(p, c.clase, curso).pct < 100)?.clase
+  const side = sideLessons(curso)
   return (
     <div className="page">
-      <PageHead kicker="Mapa de misiones" title="Tus clases" sub="Cada clase tiene su lección y su práctica. Avanza en orden: lo nuevo se apoya en lo anterior." />
+      <a href="#/clases" className="back"><Icon name="arrow" size={16} className="flip" /> Cursos</a>
+      <PageHead kicker={`Mapa de misiones · ${cu.title}`} title={`Tus clases de ${cu.short === 'JS' ? 'JavaScript' : cu.title}`} sub="Cada clase tiene su lección y su práctica. Avanza en orden: lo nuevo se apoya en lo anterior." />
       <ol className="quest-map">
-        {clases.map((c) => {
-          const cp = claseProgress(p, c.clase)
+        {list.map((c) => {
+          const cp = claseProgress(p, c.clase, curso)
           const read = p.lessons[c.id]?.read.length ?? 0
           const done = cp.pct === 100
           return (
             <li key={c.id} className={`quest ${done ? 'is-done' : ''} ${recommended === c.clase ? 'is-next' : ''}`}>
               <div className="quest-node"><Icon name={done ? 'check' : c.icon} size={20} /></div>
-              <a className="quest-card card card-link" href={`#/clase/${c.clase}`}>
+              <a className="quest-card card card-link" href={cu.claseHref(c.clase)}>
                 <div className="quest-top">
                   <div>
                     <div className="kicker">Clase {c.clase} · {c.date}</div>
@@ -39,9 +49,10 @@ export function Clases() {
           )
         })}
       </ol>
+      {list.length === 0 && <p className="muted">Todavía no hay clases en este curso.</p>}
       <div className="grid-2">
-        {lessons.filter((l) => l.clase === 0).map((l) => (
-          <a key={l.id} href={`#/${l.id}`} className="card card-link side-quest">
+        {(curso === 'js' ? [...sideLessons('js')] : side).map((l) => (
+          <a key={l.id} href={sideHref(l)} className="card card-link side-quest">
             <span className="badge-ic"><Icon name={l.icon} size={22} /></span>
             <div>
               <div className="kicker">Misión secundaria</div>
@@ -51,7 +62,7 @@ export function Clases() {
           </a>
         ))}
       </div>
-      <p className="muted small tc">{clases.reduce((n, c) => n + exercisesOfClase(c.clase).length, 0)} ejercicios en total.</p>
+      <p className="muted small tc">{list.reduce((n, c) => n + exercisesOfClase(c.clase, curso).length, 0)} ejercicios en este curso.</p>
     </div>
   )
 }

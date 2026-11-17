@@ -1,7 +1,7 @@
 import { Avatar } from '@/components/Avatar'
 import { Icon } from '@/components/Icon'
 import { Heatmap, Ring, XpBar } from '@/components/widgets'
-import { clases, exerciseById, exercises, exercisesOfClase } from '@/lib/content'
+import { CURSOS, clasesDe, cursoById, exerciseById, exercises } from '@/lib/content'
 import { BADGES, badgeById, claseProgress, levelInfo, stats, streaks } from '@/lib/gamify'
 import { useProgress } from '@/lib/store'
 
@@ -54,7 +54,7 @@ export function Home() {
           <div>
             <div className="kicker">{touched[0] ? 'Sigue donde lo dejaste' : 'Siguiente reto'}</div>
             <h3>{resume.num} · {resume.title}</h3>
-            <p className="muted">Clase {resume.clase} · {resume.kind === 'code' ? 'Código' : 'Predicción'} · {resume.xp} XP</p>
+            <p className="muted">{cursoById(resume.curso ?? 'js')?.short} · Clase {resume.clase} · {resume.kind === 'code' ? (resume.lang === 'sql' ? 'SQL' : 'Código') : 'Predicción'} · {resume.xp} XP</p>
           </div>
           <Icon name="arrow" size={22} className="resume-go" />
         </a>
@@ -62,21 +62,26 @@ export function Home() {
 
       <div className="grid-2">
         <section className="card">
-          <div className="card-head"><h2>Tu mapa</h2><a href="#/clases" className="link">Ver todo →</a></div>
-          <div className="mini-map">
-            {clases.map((c) => {
-              const cp = claseProgress(p, c.clase)
-              return (
-                <a key={c.id} href={`#/clase/${c.clase}`} className="mini-clase">
-                  <Ring pct={cp.pct} size={50} label={String(c.clase)} color={cp.pct === 100 ? 'var(--ok)' : 'var(--accent)'} />
-                  <div>
-                    <strong>{c.title}</strong>
-                    <span className="muted">{cp.done}/{cp.total} ejercicios</span>
-                  </div>
-                </a>
-              )
-            })}
-          </div>
+          <div className="card-head"><h2>Tus cursos</h2><a href="#/clases" className="link">Ver todo →</a></div>
+          {CURSOS.map((cu) => (
+            <div key={cu.id} className="home-course">
+              <a href={cu.mapHref} className="kicker home-course-t"><Icon name={cu.icon} size={14} /> {cu.title}</a>
+              <div className="mini-map">
+                {clasesDe(cu.id).map((c) => {
+                  const cp = claseProgress(p, c.clase, cu.id)
+                  return (
+                    <a key={c.id} href={cu.claseHref(c.clase)} className="mini-clase">
+                      <Ring pct={cp.pct} size={50} label={String(c.clase)} color={cp.pct === 100 ? 'var(--ok)' : 'var(--accent)'} />
+                      <div>
+                        <strong>{c.title}</strong>
+                        <span className="muted">{cp.done}/{cp.total} ejercicios</span>
+                      </div>
+                    </a>
+                  )
+                })}
+              </div>
+            </div>
+          ))}
         </section>
 
         <section className="card">
@@ -107,7 +112,7 @@ export function Home() {
           </ul>
         </section>
       </div>
-      <p className="muted small tc">{exercises.length} ejercicios · {exercisesOfClase(1).length > 0 ? clases.length : 0} clases · actualizado {new Date().getFullYear()}</p>
+      <p className="muted small tc">{exercises.length} ejercicios · {CURSOS.length} cursos · {CURSOS.reduce((n, c) => n + clasesDe(c.id).length, 0)} clases</p>
     </div>
   )
 }

@@ -11,6 +11,7 @@ import path from 'node:path'
 import crypto from 'node:crypto'
 import { parseExercises, fence, bullets, type RawExercise } from './lib/parse.ts'
 import { runNode } from './lib/run-node.ts'
+import { runSql } from '../src/sql/index.ts'
 import { normLines, normAnswer, repr } from '../src/engine/format.ts'
 import { sha256, sealJson } from '../src/lib/crypto.ts'
 import type { PublicExercise, PublicQuestion, PublicTest, SealedPayload, GeneratedBundle } from '../src/types.ts'
@@ -123,6 +124,81 @@ async function buildCode(ex: RawExercise, sealed: SealedPayload['items'][string]
   }
 }
 
+
+// ---------- ejercicios de SQL (se ejecutan con el simulador T-SQL, el mismo que usa el navegador) ----------
+async function buildSql(ex: RawExercise, sealed: SealedPayload['items'][string]): Promise<Partial<PublicExercise>> {
+  const s = ex.sections
+  const datos = fence(s.datos) ?? ''
+  const solucion = fence(s.solucion)
+  if (!solucion) {
+    err(ex.id, 'falta @solucion')
+    return {}
+  }
+  const postDefault = fence(s.verificar)
+  let variants: Record<string, unknown>[] = []
+  if (s.tests) {
+    try {
+      variants = JSON.parse(fence(s.tests)!)
+    } catch (e) {
+      err(ex.id, `@tests no es JSON valido: ${(e as Error).message}`)
+    }
+  }
+  if (variants.length < 2) warn(ex.id, 'tiene menos de 3 casos de prueba (conviene 3 o mas, con datos distintos)')
+  const showAll = 'mostrar' in s
+  const allowErrors = 'esperaerror' in s
+  const checkMain = s.check ? normLines(fence(s.check)!.split('\n')) : undefined
+  const specs = [{} as Record<string, unknown>, ...variants]
+  const tests: PublicTest[] = []
+  const expectedAll: string[][] = []
+  const seen = new Set<string>()
+  for (let t = 0; t < specs.length; t++) {
+    const spec = specs[t]
+    const base = (spec.$data as string | undefined) ?? datos
+    const append = spec.$append as string | undefined
+    const post = (spec.$post as string | undefined) ?? postDefault
+    const expect = spec.$expect as string[] | undefined
+    const label = (spec.$label as string | undefined) ?? (t === 0 ? 'Caso 1 · datos del ejercicio' : `Caso ${t + 1}`)
+    const prelude = base + (append ? `
+${append}` : '')
+    const run = runSql(solucion, { setup: prelude, post })
+    if (!allowErrors && run.errors.length) {
+      err(ex.id, `[${label}] la solucion produce un error de SQL Server: ${run.errors.map((e) => `${e.num}: ${e.text}`).join(' | ')}`)
+      continue
+    }
+    const lines = normLines(run.lines)
+    if (lines.length === 0) err(ex.id, `[${label}] la solucion no produce resultados (agrega un SELECT en @verificar o en la solucion)`)
+    // @check y $expect se escriben en el orden natural en que salen las filas (sin reordenar las consultas sin ORDER BY)
+    const natural = normLines(runSql(solucion, { setup: prelude, post, ordered: new Array(50).fill(true) }).lines)
+    if (expect && JSON.stringify(normLines(expect)) !== JSON.stringify(natural))
+      err(ex.id, `[${label}] no coincide con $expect.
+   esperado: ${JSON.stringify(expect)}
+   obtenido: ${JSON.stringify(natural)}`)
+    if (t === 0 && checkMain && JSON.stringify(checkMain) !== JSON.stringify(natural))
+      err(ex.id, `el caso principal no coincide con @check.
+   esperado: ${JSON.stringify(checkMain)}
+   obtenido: ${JSON.stringify(natural)}`)
+    seen.add(lines.join('\n'))
+    expectedAll.push(lines)
+    tests.push({
+      label,
+      data: prelude,
+      ...(post ? { post } : {}),
+      lineHashes: await Promise.all(lines.map((l, i) => hashLine(ex.id, t, i, l))),
+      sqlOrdered: run.ordered,
+      ...(showAll ? { show: lines } : {}),
+    })
+  }
+  if (tests.length > 2 && seen.size < 2) warn(ex.id, 'todos los casos producen la misma salida')
+  sealed.solution = solucion
+  sealed.expected = expectedAll
+  return {
+    lang: 'sql',
+    data: datos,
+    starter: fence(s.starter) ?? '-- Escribe tu solución aquí\n\n',
+    tests,
+  }
+}
+
 /** Quita el envoltorio de codigo de una expresion: `expr` o ``expr con `backticks` dentro``. */
 function stripCode(s: string): string {
   const t = s.trim()
@@ -137,12 +213,20 @@ async function buildPredict(ex: RawExercise, sealed: SealedPayload['items'][stri
   const s = ex.sections
   const datos = fence(s.datos) ?? ''
   const codigo = fence(s.codigo)
+  const isSql = s.lenguaje?.trim().toLowerCase() === 'sql'
   let codeLines: string[] | undefined
   if (codigo && !('norun' in s)) {
-    const run = runNode(`${datos}\n${codigo}`)
-    codeLines = run.out
-    if (run.error && !('esperaerror' in s)) err(ex.id, `@codigo falla: ${run.error.name}: ${run.error.message}`)
-    if (run.error && 'esperaerror' in s) codeLines = [...run.out, `${run.error.name}: ${run.error.message}`]
+    if (isSql) {
+      // para predecir, las lineas van en el orden en que las ve el alumno (sin reordenar los resultados sin ORDER BY)
+      const run = runSql(codigo, { setup: datos, ordered: new Array(50).fill(true) })
+      codeLines = run.lines
+      if (run.errors.length && !('esperaerror' in s)) err(ex.id, `@codigo produce un error de SQL Server: ${run.errors.map((e) => `${e.num}: ${e.text}`).join(' | ')}`)
+    } else {
+      const run = runNode(`${datos}\n${codigo}`)
+      codeLines = run.out
+      if (run.error && !('esperaerror' in s)) err(ex.id, `@codigo falla: ${run.error.name}: ${run.error.message}`)
+      if (run.error && 'esperaerror' in s) codeLines = [...run.out, `${run.error.name}: ${run.error.message}`]
+    }
   }
   const questions: PublicQuestion[] = []
   const answersPlain: string[][] = []
@@ -174,7 +258,33 @@ async function buildPredict(ex: RawExercise, sealed: SealedPayload['items'][stri
     }
     let type: PublicQuestion['type'] = 'text'
     let accept: string[] = []
-    if (/^eval(:raw)?$/.test(spec)) {
+    if (isSql && /^eval(:raw)?$/.test(spec)) {
+      err(ex.id, `pregunta ${i + 1}: en SQL usa "=> out:N" (linea de la salida) o "=> sql" (consulta sobre el estado final)`)
+      continue
+    } else if (isSql && /^(cell|rows|err)(:\d+){0,3}$/.test(spec)) {
+      // cell:R:C[:S] = celda (fila R, columna C) del conjunto S (por defecto el 1) · rows[:S] = cuantas filas · err[:N] = numero del N-esimo error
+      const sr = codigo ? runSql(codigo, { setup: datos }) : null
+      const parts = spec.split(':')
+      let val: string | undefined
+      if (parts[0] === 'cell') val = sr?.sets[Number(parts[3] ?? 1) - 1]?.rows[Number(parts[1]) - 1]?.[Number(parts[2]) - 1]
+      else if (parts[0] === 'rows') val = sr?.sets[Number(parts[1] ?? 1) - 1] ? String(sr.sets[Number(parts[1] ?? 1) - 1].rows.length) : undefined
+      else val = sr?.errors[Number(parts[1] ?? 1) - 1] ? String(sr.errors[Number(parts[1] ?? 1) - 1].num) : undefined
+      if (val === undefined) {
+        err(ex.id, `pregunta ${i + 1}: "${spec}" no existe en el resultado de @codigo`)
+        continue
+      }
+      accept = [val]
+    } else if (isSql && spec === 'sql') {
+      // la respuesta es la primera celda del resultado de la consulta, ejecutada tras los datos y el codigo
+      const r = runSql(expr!, { setup: `${datos}
+${codigo ?? ''}` })
+      const first = r.sets[0]?.rows[0]?.[0]
+      if (first === undefined) {
+        err(ex.id, `pregunta ${i + 1}: la consulta "${expr}" no devuelve resultados`)
+        continue
+      }
+      accept = [first]
+    } else if (/^eval(:raw)?$/.test(spec)) {
       const r = runNode(`${datos}\n${codigo ?? ''}\n;(${expr})`)
       if (r.error) {
         err(ex.id, `pregunta ${i + 1}: no se pudo evaluar "${expr}": ${r.error.message}`)
@@ -197,7 +307,7 @@ async function buildPredict(ex: RawExercise, sealed: SealedPayload['items'][stri
         continue
       }
       // out:N:K -> el K-esimo valor (separado por espacios) de la linea N
-      const val = ks ? line.split(/\s+/)[Number(ks) - 1] : line
+      const val = ks ? (isSql ? line.split(' | ') : line.split(/\s+/))[Number(ks) - 1] : line
       if (val === undefined) {
         err(ex.id, `pregunta ${i + 1}: la linea ${n} no tiene el valor ${ks}`)
         continue
@@ -225,6 +335,7 @@ async function buildPredict(ex: RawExercise, sealed: SealedPayload['items'][stri
   }
   sealed.answers = answersPlain
   return {
+    ...(isSql ? { lang: 'sql' as const } : {}),
     data: datos || undefined,
     code: codigo,
     runAfter: 'runafter' in s,
@@ -255,10 +366,14 @@ async function main() {
       if (!ex.sections.enunciado) err(ex.id, 'falta @enunciado')
       const sealed: SealedPayload['items'][string] = {}
       if (ex.sections.explicacion) sealed.explanation = ex.sections.explicacion
-      const extra = ex.kind === 'code' ? await buildCode(ex, sealed) : await buildPredict(ex, sealed)
+      const isSql = ex.sections.lenguaje?.trim().toLowerCase() === 'sql'
+      if (isSql && ex.curso !== 'sql') err(ex.id, 'un ejercicio con @lenguaje sql debe tener id q<clase>-...')
+      if (!isSql && ex.curso === 'sql') err(ex.id, 'los ejercicios q<clase>-... deben declarar "#### @lenguaje" con "sql"')
+      const extra = ex.kind === 'code' ? (isSql ? await buildSql(ex, sealed) : await buildCode(ex, sealed)) : await buildPredict(ex, sealed)
       sealedItems[ex.id] = sealed
       exercises.push({
         id: ex.id,
+        curso: ex.curso,
         clase: ex.clase,
         num: ex.num,
         title: ex.title,

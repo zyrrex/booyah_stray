@@ -9,7 +9,7 @@ import { logout, useAuth } from '@/lib/auth'
 
 const NAV = [
   { to: '/', icon: 'home', label: 'Inicio', match: (p: string) => p === '/' || p === '/inicio' },
-  { to: '/clases', icon: 'map', label: 'Clases', match: (p: string) => p.startsWith('/clase') },
+  { to: '/clases', icon: 'map', label: 'Cursos', match: (p: string) => p.startsWith('/clase') || p.startsWith('/curso') },
   { to: '/metodo', icon: 'compass', label: 'Método', match: (p: string) => p.startsWith('/metodo') },
   { to: '/chuleta', icon: 'list', label: 'Chuleta', match: (p: string) => p.startsWith('/chuleta') },
   { to: '/bitacora', icon: 'book', label: 'Bitácora', match: (p: string) => p.startsWith('/bitacora') },

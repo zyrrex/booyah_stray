@@ -1,12 +1,18 @@
 # stray — cuaderno de práctica
 
-Web estática de aprendizaje de programación (JavaScript, lógica) para Luis Angel. Reúne las clases ya vistas, la práctica
+Web estática de aprendizaje de programación para Luis Angel, organizada en **cursos**: **JavaScript** (9 clases) y
+**SQL con SQL Server / SSMS** (7 clases: bases de datos, DDL, DML, DQL, modelo relacional y DCL como concepto).
+Reúne las clases ya vistas, la práctica
 con **evaluador de código en el navegador**, XP/niveles/insignias, racha tipo GitHub, bitácora, avatar de gato y un
 **panel de tutor** oculto para ver su progreso y validar el contenido antes de publicarlo.
 
 - Stack: **Vite + React + TypeScript** (sin servidor; se despliega como archivos estáticos).
 - Editor: CodeMirror 6. Ejecución del código del alumno: Web Worker aislado con límite de 2 s (corta bucles infinitos).
 - Todo el progreso vive en el `localStorage` del navegador de quien estudia.
+- **Curso SQL sin servidor ni Docker**: un simulador de un subconjunto de T-SQL (`src/sql/`) corre en el navegador (y en
+  Node al compilar). **Honestidad:** no es SQL Server; los mensajes salen en inglés y solo existe lo ya enseñado. Cada
+  lección pide ejecutar lo mismo en SSMS y comparar. `GRANT/REVOKE` se aceptan sin efecto (los ejercicios de DCL son de
+  predicción).
 
 ## Empezar
 
@@ -20,6 +26,8 @@ npm run dev        # genera el contenido y abre http://localhost:5173
 | `npm run dev` | Compila el contenido y levanta el servidor de desarrollo |
 | `npm run content` | Solo compila el contenido (`content-private/` → `src/generated/bundle.json`) |
 | `npm run validate` | Igual, pero **las advertencias también fallan** (úsalo antes de publicar) |
+| `npm run test:sql` | Pruebas del simulador T-SQL (75) |
+| `npm run check:lessons` | Ejecuta cada ejemplo ```` ```sql ```` de las lecciones SQL y comprueba que funcione como se explica |
 | `npm run build` | Comprobación de tipos + build de producción en `dist/` (NO recompila contenido; es lo que corre Vercel) |
 | `npm run build:all` | Contenido + build (úsalo en tu PC) |
 | `npm run build:app` | Igual que `build` (lo usa el workflow de GitHub) |
@@ -65,6 +73,7 @@ El formato de las lecciones y de los ejercicios está en [`docs/CONTENIDO.md`](d
 | [`docs/STRAY.md`](docs/STRAY.md) | Qué es la app, arquitectura, gamificación, distribución del aprendizaje y evolución a base de datos |
 | [`docs/LECCIONES.md`](docs/LECCIONES.md) | Cómo se diseña una lección y su serie de ejercicios (estándar y checklist) |
 | [`docs/PEDAGOGIA.md`](docs/PEDAGOGIA.md) | Criterio de enseñanza, voz, método y reglas de alcance |
+| [`docs/METODOLOGIA.md`](docs/METODOLOGIA.md) | La metodología de enseñanza de Carlos: cómo explica, pregunta, corrige, deja tareas y toma notas |
 | [`docs/CONTENIDO.md`](docs/CONTENIDO.md) | Formato técnico de los archivos de lecciones y ejercicios |
 
 ## Despliegue

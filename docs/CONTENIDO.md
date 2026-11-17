@@ -45,7 +45,7 @@ Cada ejercicio empieza con una cabecera y secciones `#### @nombre`:
                     id  | num |   título           | kind |lvl|xp| etiquetas
 ```
 
-- `id` debe empezar con `s<clase>-`. `kind`: `code` (el alumno escribe código) o `predict` (responde preguntas).
+- `id` debe empezar con `s<clase>-` (curso JavaScript) o `q<clase>-` (curso SQL, ver más abajo). `kind`: `code` (el alumno escribe código) o `predict` (responde preguntas).
 - `lvl` 1–3 (estrellas), `xp` base.
 
 ### Ejercicio de código (`code`)
@@ -96,6 +96,38 @@ Formatos de pregunta (`- etiqueta => respuesta`):
 | `=> 78.54` / `=> a ;; b` | Texto libre; `;;` separa respuestas alternativas aceptadas |
 
 Las respuestas se publican solo como hashes; el alumno recibe “correcta/incorrecta” por fila, nunca la respuesta.
+
+## Curso SQL (SQL Server)
+
+**Lecciones** `content/lessons/sqlN.md`: frontmatter `curso: sql`, `id: sqlN`, `clase: N`. Fragmentos:
+
+- ```` ```sql ```` → editor ejecutable en el simulador. Primera línea opcional: `-- @datos: tienda` (o `colegio`; carga un
+  dataset de `content/sql/datasets/`) y/o `-- @error` (el ejemplo debe fallar; `check:lessons` lo exige).
+- ```` ```sql-static ```` → solo lectura (para lo que el simulador no ejecuta, p. ej. `GRANT`).
+
+**Ejercicios** `content-private/exercises/sqlN.md`: ids `qN-k`, cabecera como en JS y `#### @lenguaje` con `sql`.
+Los de **código** usan:
+
+| Sección | Contenido |
+|---|---|
+| `@datos` | ```` ```sql ```` script inicial (se ejecuta antes del SQL del alumno) |
+| `@solucion` | Solución de referencia en T-SQL (cifrada) |
+| `@tests` | Variantes: `$append` (SQL extra tras los datos), `$data` (reemplaza `@datos`), `$post` (SQL oculto tras el código del alumno), `$expect`, `$label` |
+| `@check` | Salida esperada del caso principal: celdas separadas por ` \| `, encabezado primero, y líneas `Error <num>` |
+| `@verificar` | SQL oculto que se ejecuta **después** del código del alumno (comprueba el estado final de las tablas) |
+| `@esperaerror` | (bandera) la solución debe terminar en error |
+| `@mostrar` | (bandera) muestra al alumno la salida esperada |
+
+Se compara lo que **muestran las consultas** (encabezado + filas) y los errores (`Error 2627`). Las filas se comparan sin
+importar el orden, **salvo** que la solución use `ORDER BY` (entonces el orden cuenta). Los mensajes “(N rows affected)” son
+solo informativos. Usa siempre `ORDER BY` en `@verificar` para que el resultado sea estable.
+
+**Predicción SQL** (`predict` con `@lenguaje sql`): formatos de pregunta `=> out:N`, `=> out:N:K` (separa por ` | `),
+`=> rows[:S]` (cantidad de filas del resultado S), `=> cell:R:C[:S]`, `=> err[:N]` (número de error), `=> sql` (primera
+celda de una consulta que corre tras `@datos` + `@codigo`), opción múltiple `?? a | b => a` y texto `=>`. `eval` no existe en SQL.
+Para **DCL** (que no se puede ejecutar) usa solo opción múltiple.
+
+Reglas: sin `JOIN`, `HAVING`, subconsultas, `CASE`, `UNION` ni variables (el simulador los rechaza como “unsupported”).
 
 ## Flujo
 

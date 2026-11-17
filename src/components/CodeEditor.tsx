@@ -3,6 +3,7 @@ import { EditorState } from '@codemirror/state'
 import { EditorView, keymap, lineNumbers, highlightActiveLine, drawSelection, placeholder as cmPlaceholder } from '@codemirror/view'
 import { defaultKeymap, history, historyKeymap, indentWithTab } from '@codemirror/commands'
 import { javascript } from '@codemirror/lang-javascript'
+import { MSSQL, sql } from '@codemirror/lang-sql'
 import { bracketMatching, indentOnInput, syntaxHighlighting, HighlightStyle, indentUnit } from '@codemirror/language'
 import { tags as t } from '@lezer/highlight'
 
@@ -15,6 +16,7 @@ const highlight = HighlightStyle.define([
   { tag: t.propertyName, color: 'var(--c-prop)' },
   { tag: [t.operator, t.punctuation, t.bracket], color: 'var(--c-op)' },
   { tag: t.definition(t.variableName), color: 'var(--c-def)' },
+  { tag: [t.typeName, t.standard(t.name)], color: 'var(--c-fn)' },
 ])
 
 interface Props {
@@ -26,9 +28,11 @@ interface Props {
   placeholder?: string
   label?: string
   gutter?: boolean
+  /** lenguaje de resaltado (por defecto JavaScript) */
+  lang?: 'js' | 'sql'
 }
 
-export function CodeEditor({ value, onChange, readOnly, onRun, minLines = 4, placeholder, label, gutter = true }: Props) {
+export function CodeEditor({ value, onChange, readOnly, onRun, minLines = 4, placeholder, label, gutter = true, lang = 'js' }: Props) {
   const host = useRef<HTMLDivElement>(null)
   const view = useRef<EditorView | null>(null)
   const cb = useRef({ onChange, onRun })
@@ -43,7 +47,7 @@ export function CodeEditor({ value, onChange, readOnly, onRun, minLines = 4, pla
       indentOnInput(),
       indentUnit.of('  '),
       EditorState.tabSize.of(2),
-      javascript(),
+      lang === 'sql' ? sql({ dialect: MSSQL, upperCaseKeywords: false }) : javascript(),
       syntaxHighlighting(highlight),
       keymap.of([
         { key: 'Mod-Enter', run: () => (cb.current.onRun ? (cb.current.onRun(), true) : false) },
@@ -67,7 +71,7 @@ export function CodeEditor({ value, onChange, readOnly, onRun, minLines = 4, pla
       view.current = null
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [readOnly, gutter])
+  }, [readOnly, gutter, lang])
 
   useEffect(() => {
     const v = view.current

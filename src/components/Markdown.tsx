@@ -3,6 +3,7 @@ import ReactMarkdown, { type Components } from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { CodeEditor } from './CodeEditor'
 import { Console } from './Console'
+import { SqlSnippet } from './SqlSnippet'
 import { Icon } from './Icon'
 import { runCode, type RunResult } from '@/engine/runner'
 import { actions, useProgress } from '@/lib/store'
@@ -188,6 +189,8 @@ export const Markdown = memo(function Markdown({ md, lessonId }: { md: string; l
       if (lang === 'quiz') return <Quiz raw={body} lessonId={lessonId} />
       if (lang === 'js') return <Snippet code={body} />
       if (lang === 'js-static') return <Snippet code={body} runnable={false} />
+      if (lang === 'sql') return <SqlSnippet code={body} />
+      if (lang === 'sql-static') return <SqlSnippet code={body} runnable={false} />
       return <pre className="plain">{body}</pre>
     },
     blockquote: ({ children }) => <Callout>{children}</Callout>,

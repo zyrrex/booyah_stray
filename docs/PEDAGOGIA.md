@@ -4,6 +4,7 @@
 > (lecciones, ejercicios, chuleta, mensajes de la interfaz). Si algo del contenido contradice este documento, el contenido
 > está mal.
 > Complementos: [`STRAY.md`](STRAY.md) (la app) y [`LECCIONES.md`](LECCIONES.md) (cómo se escribe una clase).
+> El método **vivo** del tutor (cómo explica, pregunta, corrige y deja tareas) está en [`METODOLOGIA.md`](METODOLOGIA.md).
 
 ---
 

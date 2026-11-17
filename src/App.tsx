@@ -11,6 +11,7 @@ import { Bitacora } from '@/pages/Bitacora'
 import { Chuleta } from '@/pages/Chuleta'
 import { Clase } from '@/pages/Clase'
 import { Clases } from '@/pages/Clases'
+import { Cursos } from '@/pages/Cursos'
 import { Exercise } from '@/pages/Exercise'
 import { Home } from '@/pages/Home'
 import { Logros } from '@/pages/Logros'
@@ -21,10 +22,13 @@ function Router() {
   const path = usePath()
   let m: Record<string, string> | null
   if ((m = match(path, '/clase/:n'))) return <Clase n={Number(m.n)} />
+  if ((m = match(path, '/curso/:curso/clase/:n'))) return <Clase n={Number(m.n)} curso={m.curso === 'sql' ? 'sql' : 'js'} />
+  if ((m = match(path, '/curso/:curso'))) return <Clases curso={m.curso === 'sql' ? 'sql' : 'js'} />
   if ((m = match(path, '/ejercicio/:id'))) return <Exercise id={m.id} />
-  if (path === '/clases') return <Clases />
+  if (path === '/clases') return <Cursos />
   if (path === '/metodo') return <Metodo />
   if (path === '/chuleta') return <Chuleta />
+  if ((m = match(path, '/chuleta/:curso'))) return <Chuleta curso={m.curso === 'sql' ? 'sql' : 'js'} />
   if (path === '/bitacora') return <Bitacora />
   if (path === '/logros') return <Logros />
   if (path === '/perfil') return <Perfil />

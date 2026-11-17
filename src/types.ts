@@ -2,6 +2,12 @@
 
 export type ExerciseKind = 'code' | 'predict'
 
+/** Cursos de la plataforma. Los ids de JavaScript no cambian (s7-f1...), los de SQL empiezan con q (q2-a1...). */
+export type CursoId = 'js' | 'sql'
+
+/** Lenguaje en que escribe el alumno. */
+export type ExerciseLang = 'js' | 'sql'
+
 /** Caso de prueba publico: nunca trae la salida esperada en claro (solo hashes por linea), salvo `show`. */
 export interface PublicTest {
   label: string
@@ -10,6 +16,10 @@ export interface PublicTest {
   lineHashes: string[]
   /** Solo si el cuaderno original ya muestra la salida esperada. */
   show?: string[]
+  /** SQL: consulta de comprobacion que se ejecuta DESPUES del codigo del alumno (sus resultados cuentan). */
+  post?: string
+  /** SQL: por cada conjunto de resultados, si el orden importa (la solucion tenia ORDER BY). */
+  sqlOrdered?: boolean[]
 }
 
 export interface PublicQuestion {
@@ -23,6 +33,9 @@ export interface PublicQuestion {
 
 export interface PublicExercise {
   id: string
+  curso: CursoId
+  /** SQL: el codigo del alumno (y de predict) es SQL y se ejecuta en el simulador */
+  lang?: ExerciseLang
   clase: number
   num: string
   title: string

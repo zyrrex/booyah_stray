@@ -2,28 +2,31 @@ import { useState } from 'react'
 import { Markdown } from '@/components/Markdown'
 import { Icon } from '@/components/Icon'
 import { Ring, Stars } from '@/components/widgets'
-import { clases, exercisesOfClase } from '@/lib/content'
+import { clasesDe, cursoById, exercisesOfClase } from '@/lib/content'
 import { claseProgress } from '@/lib/gamify'
 import { useProgress } from '@/lib/store'
+import type { CursoId } from '@/types'
 
-export function Clase({ n }: { n: number }) {
+export function Clase({ n, curso = 'js' }: { n: number; curso?: CursoId }) {
+  const cu = cursoById(curso)!
+  const clases = clasesDe(curso)
   const lesson = clases.find((c) => c.clase === n)
   const p = useProgress()
   const [tab, setTab] = useState<'leccion' | 'practica'>(() => (location.hash.includes('practica') ? 'practica' : 'leccion'))
-  if (!lesson) return <div className="page"><p>Esa clase no existe. <a href="#/clases">Volver al mapa</a></p></div>
-  const list = exercisesOfClase(n)
-  const cp = claseProgress(p, n)
+  if (!lesson) return <div className="page"><p>Esa clase no existe. <a href="#/clases">Volver a los cursos</a></p></div>
+  const list = exercisesOfClase(n, curso)
+  const cp = claseProgress(p, n, curso)
   const read = p.lessons[lesson.id]?.read ?? []
   const prev = clases.find((c) => c.clase === n - 1)
   const next = clases.find((c) => c.clase === n + 1)
 
   return (
     <div className="page">
-      <a href="#/clases" className="back"><Icon name="arrow" size={16} className="flip" /> Mapa</a>
+      <a href={cu.mapHref} className="back"><Icon name="arrow" size={16} className="flip" /> {cu.title}</a>
       <header className="clase-head card">
         <div className="clase-ic"><Icon name={lesson.icon} size={30} /></div>
         <div className="clase-ttl">
-          <div className="kicker">Clase {n} · {lesson.date}</div>
+          <div className="kicker">{cu.short} · Clase {n} · {lesson.date}</div>
           <h1>{lesson.title}</h1>
           <p className="sub">{lesson.subtitle}</p>
         </div>
@@ -46,7 +49,7 @@ export function Clase({ n }: { n: number }) {
           <nav className="toc card" aria-label="En esta lección">
             <div className="toc-t">En esta lección</div>
             {lesson.toc.map((t) => (
-              <a key={t.id} href={`#/clase/${n}`} onClick={(e) => { e.preventDefault(); document.getElementById(t.id)?.scrollIntoView({ behavior: 'smooth', block: 'start' }) }} className={read.includes(t.id) ? 'is-read' : ''}>
+              <a key={t.id} href={cu.claseHref(n)} onClick={(e) => { e.preventDefault(); document.getElementById(t.id)?.scrollIntoView({ behavior: 'smooth', block: 'start' }) }} className={read.includes(t.id) ? 'is-read' : ''}>
                 <Icon name={read.includes(t.id) ? 'check' : 'paw'} size={13} /> {t.text}
               </a>
             ))}
@@ -69,7 +72,7 @@ export function Clase({ n }: { n: number }) {
                 <h4>{e.title}</h4>
                 <div className="ex-foot">
                   <Stars n={e.level} />
-                  <span className="chip">{e.kind === 'code' ? 'código' : 'predicción'}</span>
+                  <span className="chip">{e.kind === 'code' ? (e.lang === 'sql' ? 'SQL' : 'código') : 'predicción'}</span>
                   <span className="ex-xp">{pr?.xpAwarded ? `+${pr.xpAwarded}` : e.xp} XP</span>
                 </div>
               </a>
@@ -79,8 +82,8 @@ export function Clase({ n }: { n: number }) {
       )}
 
       <div className="pager">
-        {prev ? <a href={`#/clase/${prev.clase}`} className="btn btn-ghost"><Icon name="arrow" size={16} className="flip" /> {prev.title}</a> : <span />}
-        {next && <a href={`#/clase/${next.clase}`} className="btn btn-ghost">{next.title} <Icon name="arrow" size={16} /></a>}
+        {prev ? <a href={cu.claseHref(prev.clase)} className="btn btn-ghost"><Icon name="arrow" size={16} className="flip" /> {prev.title}</a> : <span />}
+        {next && <a href={cu.claseHref(next.clase)} className="btn btn-ghost">{next.title} <Icon name="arrow" size={16} /></a>}
       </div>
     </div>
   )

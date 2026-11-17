@@ -8,7 +8,7 @@
 
 ## 1. Qué es
 
-**stray** es una **bitácora de aprendizaje de programación** (JavaScript y lógica) para **Luis Angel** (usuario `stray`),
+**stray** es una **bitácora de aprendizaje de programación** organizada en **cursos** (JavaScript y SQL Server) para **Luis Angel** (usuario `stray`),
 construida por su hermano **Carlos** (el tutor), que le enseña por videollamada **los domingos**. La web **no reemplaza**
 la clase: es el lugar donde lo visto se **ordena, se practica hasta dominarlo y se registra**.
 
@@ -65,7 +65,8 @@ del tutor.
 
 ### 4.1 Stack
 - **Vite + React + TypeScript** (SPA), rutas con `#` y `base: './'` → funciona en cualquier carpeta o hosting estático.
-- **CodeMirror 6** como editor.
+- **CodeMirror 6** como editor (JS y SQL/MSSQL).
+- **Simulador T-SQL propio** (`src/sql/`, TypeScript puro) para el curso de SQL; se ejecuta en el hilo del navegador, sin backend.
 - **Web Worker** para ejecutar el código del alumno (límite de 2 s; corta bucles infinitos; `"use strict"`).
 - **WebCrypto** para hashes (SHA-256), derivación de clave (PBKDF2) y cifrado (AES-256-GCM).
 - **Markdown** (`react-markdown` + GFM) para lecciones, con bloques especiales (`js`, `js-static`, `quiz`, callouts).
@@ -162,7 +163,35 @@ día. **Consecuencias:** si borra los datos del sitio, pierde el progreso; el tu
 
 Más dos **misiones secundarias** (no numeradas): **Método** (guía de resolución de problemas) y **Chuleta**.
 
-### 6.2 Lo que aún **no** se ha enseñado (no debe aparecer)
+### 6.1b Curso de SQL (SQL Server / SSMS)
+
+La app es **multi-curso**: JavaScript es un curso más y el progreso de Luis Angel no cambia (los ids `sN-…` y `claseN` se
+conservan). El curso SQL corre a la par.
+
+| Clase | Tema | Ejercicios |
+|---|---|---|
+| 1 | Bases de datos, tablas y qué es SQL | 14 |
+| 2 | DDL: `CREATE`, `ALTER`, `DROP`, `TRUNCATE`, renombrar | 18 |
+| 3 | DML: `INSERT`, `UPDATE`, `DELETE` (regla de oro: nunca sin `WHERE`) | 16 |
+| 4 | DQL I: `SELECT`, `FROM`, `WHERE` | 22 |
+| 5 | DQL II: `ORDER BY`, `TOP`, `OFFSET/FETCH`, agregados, `GROUP BY` | 20 |
+| 6 | Modelo relacional: llave primaria, PK compuesta, llave foránea | 20 |
+| 7 | DCL (`GRANT`, `REVOKE`, `DENY`: solo concepto) + integradores | 14 |
+| | **Total** | **124** |
+
+**Aún no se ve:** `JOIN`, `HAVING` (omitido por indicación del tutor), subconsultas, `CASE`, `UNION`, vistas,
+procedimientos, transacciones, índices.
+
+**Motor.** Un simulador de un subconjunto de T-SQL escrito en TypeScript (`src/sql/`), sin servidor, Docker ni WASM: corre
+en el navegador (y en Node al compilar el contenido, para verificar las soluciones). Emula tipos, `IDENTITY`, `PRIMARY KEY`,
+`FOREIGN KEY`, `UNIQUE`, `CHECK`, `DEFAULT`, `NULL`, números de error reales (2627, 547, 515, 208…), `GO`, orden por llave
+primaria y `INFORMATION_SCHEMA`. **Limitaciones honestas:** los mensajes salen en inglés, `GRANT/REVOKE` no hacen nada y
+el alumno debe **repetir los ejemplos en SSMS** para comprobar que en SQL Server real sale lo mismo.
+
+**Insignias del curso:** primera consulta, arquitecto (DDL), manos limpias (DML), cazador de datos (DQL), llave maestra (PK),
+puente (FK), detective, 10 y 40 ejercicios, una por clase, y las de ambos cursos (`doble-curso`, `curso-js`, `curso-sql`).
+
+### 6.2 Lo que aún **no** se ha enseñado en JavaScript (no debe aparecer)
 Métodos de arreglos (`push`, `map`, `filter`, `reduce`…), `Object.keys/entries`, `do while`, JSON (solo mencionado),
 clases, `try/catch`, spread/rest, desestructuración, DOM, asincronía.
 
